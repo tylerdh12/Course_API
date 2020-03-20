@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 
 const userRoutes = require("./routes/users");
 const courseRoutes = require("./routes/courses");
+const plantRoutes = require("./routes/plants");
 
 // variable to enable global error logging
 const enableGlobalErrorLogging =
@@ -42,6 +43,7 @@ app.use((req, res, next) => {
 
 app.use("/api/users", userRoutes);
 app.use("/api/courses", courseRoutes);
+app.use("/api/plants", plantRoutes);
 
 // setup a friendly greeting for the root route
 app.get("/", (req, res) => {

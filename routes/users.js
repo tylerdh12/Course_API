@@ -9,7 +9,7 @@ const bcryptjs = require("bcryptjs"); // Include Bcryptjs
 
 const auth = require("basic-auth"); // Include Basic Auth
 
-const { User, Course } = require("../database/models");
+const { User, Course, Plant } = require("../database/models");
 
 // Async Handler Function
 function asyncHandler(cb) {

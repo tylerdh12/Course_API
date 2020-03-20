@@ -78,7 +78,16 @@ module.exports = sequelize => {
   );
 
   User.associate = function(models) {
-    User.hasMany(models.Course, {
+    // User.hasMany(models.Course, {
+    //   // as: "owner", // alias
+    //   as: "owner",
+    //   foreignKey: {
+    //     fieldName: "id",
+    //     allowNull: false
+    //   }
+    // });
+
+    User.hasMany(models.Plant, {
       // as: "owner", // alias
       as: "owner",
       foreignKey: {

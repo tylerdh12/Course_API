@@ -3,7 +3,7 @@ const router = express.Router();
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
-const { User, Course, Plant } = require("../database/models");
+const { User, Plant, Course } = require("../database/models");
 
 const { check, validationResult } = require("express-validator");
 
@@ -65,11 +65,11 @@ const authenticateUser = async (req, res, next) => {
   }
 };
 
-// GET /api/courses 200 - Returns a list of courses (including the user that owns each course)
+// GET /api/plants 200 - Returns a list of plants (including the user that owns each plant)
 router.get(
   "/",
   asyncHandler(async (req, res) => {
-    const courses = await Course.findAll({
+    const plants = await Plant.findAll({
       attributes: { exclude: ["createdAt", "updatedAt"] },
       include: [
         {
@@ -79,18 +79,18 @@ router.get(
         }
       ]
     });
-    courses
-      ? res.status(200).json(courses)
-      : res.status(404).json({ message: "Unable to find the courses" });
+    plants
+      ? res.status(200).json(plants)
+      : res.status(404).json({ message: "Unable to find your plants" });
   })
 );
 
-// GET /api/courses/:id 200 - Returns a the course (including the user that owns the course) for the provided course ID
+// GET /api/plants/:id 200 - Returns a the plant (including the user that owns the plant) for the provided plant ID
 router.get(
-  "/:courseId",
+  "/:plantId",
   asyncHandler(async (req, res) => {
-    let { courseId } = req.params;
-    const course = await Course.findByPk(courseId, {
+    let { plantId } = req.params;
+    const plant = await Plant.findByPk(plantId, {
       attributes: { exclude: ["createdAt", "updatedAt"] },
       include: [
         {
@@ -100,23 +100,20 @@ router.get(
         }
       ]
     });
-    course
-      ? res.status(200).json(course)
+    plant
+      ? res.status(200).json(plant)
       : res.status(404).json({
           message:
-            "The course was not found. Either the course doesn't exist or there has been an error in your request."
+            "The plant was not found. Either the plant doesn't exist or there has been an error in your request."
         });
   })
 );
 
-// POST /api/courses 201 - Creates a course, sets the Location header to the URI for the course, and returns no content
+// POST /api/plants 201 - Creates a plant, sets the Location header to the URI for the plant, and returns no content
 router.post(
   "/",
   [
-    check("title", 'Please Provide a value for "Title"')
-      .not()
-      .isEmpty(),
-    check("description", 'Please Provide a value for "Description"')
+    check("plantName", 'Please Provide a value for "Plant Name"')
       .not()
       .isEmpty()
   ],
@@ -131,20 +128,28 @@ router.post(
       // Return the validation errors to the client.
       res.status(400).json({ errors: errorMessages });
     } else if (req.body.userId === req.currentUser.id) {
-      // Get the course from the request body.
-      const course = await Course.create({
-        userId: req.currentUser.id,
-        title: req.body.title,
+      // Get the plant from the request body.
+      const plant = await Plant.create({
+        userId: req.body.userId,
+        plantName: req.body.plantName,
         description: req.body.description,
-        estimatedTime: req.body.estimatedTime,
-        materialsNeeded: req.body.materialsNeeded
+        estimatedTimeToHarvest: req.body.estimatedTimeToHarvest,
+        plantingTime: req.body.plantingTime,
+        seedDepth: req.body.seedDepth,
+        seedSpacing: req.body.seedSpacing,
+        sunLevel: req.body.sunLevel,
+        moistureLevel: req.body.moistureLevel,
+        imageOfPlant: req.body.imageOfPlant,
+        plantingPartners: req.body.plantingPartners,
+        plantingEnemies: req.body.plantingEnemies,
+        seedBook: req.body.seedBook
       });
-      const uri = "/api/course/" + course.id;
+      const uri = "/api/plant/" + plant.id;
       res.setHeader("Location", uri);
       res.status(201).json();
     } else {
       res.status(401).json({
-        message: "You can only create or update courses that belong to you.",
+        message: "You can only create or update plants that belong to you.",
         currentUser: req.currentUser.id,
         userId: req.body.userId
       });
@@ -152,14 +157,11 @@ router.post(
   })
 );
 
-// PUT /api/courses/:id 204 - Updates a course and returns no content
+// PUT /api/plants/:id 204 - Updates a plant and returns no content
 router.put(
-  "/:courseId",
+  "/:plantId",
   [
-    check("title", 'Please Provide a value for "Title"')
-      .not()
-      .isEmpty(),
-    check("description", 'Please Provide a value for "Description"')
+    check("plantName", 'Please Provide a value for "Plant Name"')
       .not()
       .isEmpty()
   ],
@@ -174,29 +176,37 @@ router.put(
       // Return the validation errors to the client.
       res.status(400).json({ errors: errorMessages });
     } else if (req.body.userId === req.currentUser.id) {
-      let { courseId } = req.params;
-      const course = await Course.findByPk(courseId, {
+      let { plantId } = req.params;
+      const plant = await Plant.findByPk(plantId, {
         attributes: { exclude: ["createdAt", "updatedAt"] }
       });
-      course
-        ? course
+      plant
+        ? plant
             .update({
               userId: req.body.userId,
-              title: req.body.title,
+              plantName: req.body.plantName,
               description: req.body.description,
-              estimatedTime: req.body.estimatedTime,
-              materialsNeeded: req.body.materialsNeeded
+              estimatedTimeToHarvest: req.body.estimatedTimeToHarvest,
+              plantingTime: req.body.plantingTime,
+              seedDepth: req.body.seedDepth,
+              seedSpacing: req.body.seedSpacing,
+              sunLevel: req.body.sunLevel,
+              moistureLevel: req.body.moistureLevel,
+              imageOfPlant: req.body.imageOfPlant,
+              plantingPartners: req.body.plantingPartners,
+              plantingEnemies: req.body.plantingEnemies,
+              seedBook: req.body.seedBook
             })
             .then(() => {
               res.status(204).json();
             })
         : res.status(404).json({
             message:
-              "The course was not found. Either the course doesn't exist or there has been an error in your request."
+              "The plant was not found. Either the plant doesn't exist or there has been an error in your request."
           });
     } else {
       res.status(403).json({
-        message: "You can only create or update courses that belong to you.",
+        message: "You can only create or update plants that belong to you.",
         currentUser: req.currentUser.id,
         userId: req.body.userId
       });
@@ -204,23 +214,23 @@ router.put(
   })
 );
 
-// DELETE /api/courses/:id 204 - Deletes a course and returns no content
+// DELETE /api/plants/:id 204 - Deletes a plant and returns no content
 router.delete(
-  "/:courseId",
+  "/:plantId",
   authenticateUser,
   asyncHandler(async (req, res) => {
-    let { courseId } = req.params;
-    const course = await Course.findByPk(courseId, {
+    let { plantId } = req.params;
+    const plant = await Plant.findByPk(plantId, {
       attributes: { exclude: ["createdAt", "updatedAt"] }
     });
-    if (course) {
-      if (course.userId === req.currentUser.id) {
-        course.destroy().then(() => {
+    if (plant) {
+      if (plant.userId === req.currentUser.id) {
+        plant.destroy().then(() => {
           res.status(204).json();
         });
       } else {
         res.status(403).json({
-          message: "You can only create or update courses that belong to you.",
+          message: "You can only create or update plants that belong to you.",
           currentUser: req.currentUser.id,
           userId: req.body.userId
         });
