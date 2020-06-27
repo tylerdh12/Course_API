@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 
 const userRoutes = require("./routes/users");
 const courseRoutes = require("./routes/courses");
+const tasksRoutes = require("./routes/tasks");
 
 // variable to enable global error logging
 const enableGlobalErrorLogging =
@@ -42,18 +43,20 @@ app.use((req, res, next) => {
 
 app.use("/api/users", userRoutes);
 app.use("/api/courses", courseRoutes);
+app.use("/api/tasks", tasksRoutes);
 
 // setup a friendly greeting for the root route
 app.get("/", (req, res) => {
   res.json({
-    message: "Welcome to the REST API project!"
+    message:
+      "Welcome to Tyler's REST API. Please use the documentation for use of this API. If you are looking at my project please just look at my directory in GitHub. Please do not explore routes without the concent from the author.",
   });
 });
 
 // send 404 if no other route matched
 app.use((req, res) => {
   res.status(404).json({
-    message: "Route Not Found"
+    message: "Route Not Found",
   });
 });
 
@@ -65,7 +68,7 @@ app.use((err, req, res, next) => {
 
   res.status(err.status || 500).json({
     message: err.message,
-    error: {}
+    error: {},
   });
 });
 
